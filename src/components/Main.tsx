@@ -39,7 +39,6 @@ interface Data {
   returnPercent?: number | undefined,
   returnPercentList: number[],
   initialAmountItems?: number | undefined,
-  finiteAmountItems?: number | undefined,
 }
 
 const initData: Data = {
@@ -54,7 +53,6 @@ const initData: Data = {
   returnPercent: 24.7,
   returnPercentList: [24.7, 36.7, 42.8],
   initialAmountItems: 0,
-  finiteAmountItems: 0,
 }
 
 const numberFormatProps: NumberFormatProps<TextFieldProps> = {
@@ -65,10 +63,12 @@ const numberFormatProps: NumberFormatProps<TextFieldProps> = {
   decimalScale: 0,
   allowNegative: false,
   allowLeadingZeros: false,
+  allowEmptyFormatting: true,
   fullWidth: true,
 }
 
 const Main = () => {
+  
   const [localData, setLocalData] = useLocalStorage("calculateCraftingData", initData)
 
   const [resources, setResources] = useState(localData.resources)
@@ -78,16 +78,71 @@ const Main = () => {
   const [returnPercent, setReturnPercent] = useState(localData.returnPercent)
   const [returnPercentList, setReturnPercentList] = useState(localData.returnPercentList)
   const [initialAmountItems, setInitialAmountItems] = useState(localData.initialAmountItems)
-  const [finiteAmountItems, setFiniteAmountItems] = useState(localData.finiteAmountItems)
 
-  useEffect(() => setLocalData({ ...localData, resources }), [resources])
-  useEffect(() => setLocalData({ ...localData, artifact }), [artifact])
-  useEffect(() => setLocalData({ ...localData, factoryPrice }), [factoryPrice])
-  useEffect(() => setLocalData({ ...localData, realizationPrice }), [realizationPrice])
-  useEffect(() => setLocalData({ ...localData, returnPercent }), [returnPercent])
-  useEffect(() => setLocalData({ ...localData, initialAmountItems }), [initialAmountItems])
-  useEffect(() => setLocalData({ ...localData, finiteAmountItems }), [finiteAmountItems])
-  
+  const [finiteAmountItems, setFiniteAmountItems] = useState(0)
+  const [profit, setProfit] = useState(0)
+  const [resourcesProfit, setResourcesProfit] = useState(0)
+  const [resourcesExpenses, setResourcesExpenses] = useState(0)
+  const [generalExpenses, setGeneralExpenses] = useState(0)
+
+  const [additionalPercent, setAdditionalPercent] = useState<number | undefined>()
+
+  useEffect(() => {
+    setLocalData({ id: initData.id, resources, artifact, factoryPrice, realizationPrice, returnPercent, returnPercentList, initialAmountItems })
+  }, [ resources, artifact, factoryPrice, realizationPrice, returnPercent, returnPercentList, initialAmountItems ])
+
+  useEffect(() => {
+    setResourcesExpenses(calculateResourcesExpensesForOne())
+  }, [resources])
+
+  useEffect(() => {
+    setGeneralExpenses(calculateGeneralExpenses())
+  }, [resourcesExpenses, artifact, initialAmountItems, finiteAmountItems, factoryPrice])
+
+  useEffect(() => {
+    setProfit(calculateRevenue() - generalExpenses)
+  }, [generalExpenses, realizationPrice, finiteAmountItems])
+
+  useEffect(() => {
+    setResourcesProfit(calculateResourcesProfit())
+  }, [resourcesExpenses, finiteAmountItems])
+
+  useEffect(() => {
+    setFiniteAmountItems(calculateFiniteAmountItems())
+  }, [returnPercent, initialAmountItems])
+
+  function calculateRevenue () {
+    return Math.floor(finiteAmountItems || 0) * ((realizationPrice || 0) - (realizationPrice || 0) * 0.045);
+  }
+
+  function calculateResourcesProfit () {
+    return (finiteAmountItems - Math.floor(finiteAmountItems)) * resourcesExpenses
+  }
+
+  function calculateResourcesExpensesForOne () {
+    return resources.reduce((acc, res) => (res.price||0) * (res.amount||0) + acc, 0)
+  }
+
+  function calculateGeneralExpenses () {
+    return (resourcesExpenses * (initialAmountItems || 0)) 
+      + ((artifact.price || 0) * (artifact.amount || 0) * Math.floor(finiteAmountItems)) 
+      + (finiteAmountItems * (factoryPrice || 0));
+  }
+
+  function calculateFiniteAmountItems () {
+    let returnedResources = (initialAmountItems || 0) * ((returnPercent || 0)/100);
+    let amountCrafted = initialAmountItems || 0;
+    
+    while (returnedResources >= 1) {
+        amountCrafted += returnedResources
+        returnedResources = returnedResources * ((returnPercent || 0)/100)
+    }
+
+    amountCrafted += returnedResources
+
+    return amountCrafted;
+  }
+
   const onChangeResourcesHandler = (updatedResource: Resource, index: number) => {
     setResources(
       prev => prev.map((res, i) => i === index
@@ -96,15 +151,21 @@ const Main = () => {
       )
     )
   };
-  
+
   const onChangeArtifactHandler = (updatedResource: Resource) => {
     setArtifact(prev => ({ ...prev, ...updatedResource }))
   };
-  
+
   const onChangeHandler = <D extends Function>(dispatch: D) => {
     return (values: NumberFormatValues) => dispatch(values.floatValue)
   };
-    
+
+  const onClickAddPercent = () => {
+    if (additionalPercent && !returnPercentList.includes(additionalPercent)) {
+      setReturnPercentList(prev => [...prev, additionalPercent].sort())
+    }
+  }
+
   return (
     <React.Fragment>
       <CssBaseline />
@@ -136,10 +197,11 @@ const Main = () => {
       <Container sx={{
         paddingTop: { xs: 0, md: 4 },
         paddingX: { xs: 2, md: 4 },
-        marginTop: { xs: "-60px", md: 0 }
+        marginTop: { xs: "-60px", md: 0 },
+        paddingBottom: { xs: "75px", md: 0 }
       }}>
         <Grid container spacing={2}>
-          <Grid item xs={4} md={true}>
+          <Grid item xs={6} sm={4} md={true}>
             <Item>
               {resources.map((resource, i) => (
                 <NumberFormat
@@ -164,7 +226,7 @@ const Main = () => {
             </Item>
           </Grid>
 
-          <Grid item xs={4} md={true}>
+          <Grid item xs={6} sm={4} md={true}>
             <Item>
               {resources.map((resource, i) => (
                 <NumberFormat
@@ -187,7 +249,7 @@ const Main = () => {
             </Item>
           </Grid>
 
-          <Grid item xs={4} md={true}>
+          <Grid item xs={6} sm={4} md={true}>
             <Item>
               <NumberFormat
                 { ...numberFormatProps }
@@ -227,10 +289,12 @@ const Main = () => {
                       label="Додати варіант"
                       isAllowed={({ floatValue }) => (floatValue || 0) <= 100}
                       decimalScale={1}
+                      suffix="%"
+                      value={additionalPercent}
+                      onValueChange={onChangeHandler(setAdditionalPercent)}
                       InputProps={{
                         endAdornment: <InputAdornment position="end">
-                          <Typography variant="subtitle2" sx={{ paddingX: "6px" }}>%</Typography>
-                          <IconButton aria-label="delete" size="small" color="success" onClick={() => console.log('added')}>
+                          <IconButton aria-label="delete" size="small" color="success" onClick={onClickAddPercent}>
                             <AddCircleRoundedIcon />
                           </IconButton>
                         </InputAdornment>,
@@ -245,25 +309,32 @@ const Main = () => {
                   ))}
                 </Select>
               </FormControl>
-              {/* <Autocomplete
-                options={returnPercentList}
-                renderInput={(params) => (
-                  <NumberFormat
-                    {...params}
-                    { ...numberFormatProps }
-                    label="Відсоток повернення ресурсів"
-                    // select
-                    // fullWidth
-                    value={returnPercent}
-                    decimalScale={2}
-                    onValueChange={onChangeHandler(setReturnPercent)}
-                  />
-                )}
-              /> */}
+
+              <NumberFormat
+                { ...numberFormatProps }
+                label="Загальні витрати"
+                value={generalExpenses}
+                variant="filled"
+                InputProps={{
+                  readOnly: true,
+                }}
+                sx={{ display: { xs: "block", sm: "none"}}}
+              />
+
+              <NumberFormat
+                { ...numberFormatProps }
+                label="К-сть артефактів"
+                value={Math.floor(finiteAmountItems)}
+                variant="filled"
+                InputProps={{
+                  readOnly: true,
+                }}
+                sx={{ display: { xs: "block", sm: "none"}}}
+              />
             </Item>
           </Grid>
 
-          <Grid item xs={6} md={true}>
+          <Grid item xs={6} sm={6} md={true}>
             <Item>
               <NumberFormat
                 { ...numberFormatProps }
@@ -271,17 +342,90 @@ const Main = () => {
                 value={initialAmountItems}
                 onValueChange={onChangeHandler(setInitialAmountItems)}
               />
+
+              {resources.map((resource, i) => (
+                <NumberFormat
+                  { ...numberFormatProps }
+                  label={`Загальна к-сть ${i+1} ресурсу`}
+                  key={i}
+                  value={(resource.amount || 0) * (initialAmountItems || 0)}
+                  variant="filled"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+              ))}
+
+              <NumberFormat
+                { ...numberFormatProps }
+                label="Кінцева к-сть елементів"
+                value={finiteAmountItems}
+                decimalScale={3}
+                variant="filled"
+                size="medium"
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
             </Item>
           </Grid>
 
-          <Grid item xs={6} md={true}>
+          <Grid item xs={12} sm={6} md={true}>
             <Item>
-              <NumberFormat
-                { ...numberFormatProps }
-                label="Ціна Виробництва"
-                value={factoryPrice}
-                onValueChange={onChangeHandler(setFactoryPrice)}
-              />
+                <NumberFormat
+                  { ...numberFormatProps }
+                  label="Прибуток з продукції"
+                  value={profit}
+                  allowNegative
+                  variant="filled"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+
+                <NumberFormat
+                  { ...numberFormatProps }
+                  label="Залишок ресурсів"
+                  value={resourcesProfit}
+                  allowNegative 
+                  variant="filled"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+
+                <NumberFormat
+                  { ...numberFormatProps }
+                  label="Загальний прибуток"
+                  value={profit + resourcesProfit}
+                  allowNegative 
+                  variant="filled"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+
+                <NumberFormat
+                  { ...numberFormatProps }
+                  label="Загальні витрати"
+                  value={generalExpenses}
+                  variant="filled"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{ display: { xs: "none", sm: "block"}}}
+                />
+  
+                <NumberFormat
+                  { ...numberFormatProps }
+                  label="К-сть артефактів"
+                  value={Math.floor(finiteAmountItems)}
+                  variant="filled"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{ display: { xs: "none", sm: "block"}}}
+                />
             </Item>
           </Grid>
         </Grid>
