@@ -1,24 +1,36 @@
 import React from 'react';
-import styled from 'styled-components'
 
-import './App.scss';
+import Main from './components/Main'
 
-function App() {
+const App = () => {
+  const inputNumberHandler = <D extends Function>(dispatch: D) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, name } = event.target;
+
+    if (name.includes('[')) {
+      const [firstName, secondName] = name.split('[')
+      const index = secondName[0]
+      const second = secondName.split('.')[1];
+      dispatch((prev: any) => prev.map((item: any, i: number) => i === +index ? { ...item, [second]: value } : item))
+      return
+    }
+
+    if (name.includes('.')) {
+      const secondName = name.split('.')[1];
+      dispatch((prev: any) => ({
+        ...prev,
+        [secondName]: value
+      }))
+      return
+    }
+
+    dispatch(value)
+  };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h2>
-          Calculate crafting of Albion Online equipments
-        </h2>
-      </header>
-    </div>
-  );
+    <>
+      <Main />
+    </>
+  )
 }
 
 export default App;
-
-const ResourcesPriceStyled = styled.div`
-  display: flex;
-  background-color: green;
-`
