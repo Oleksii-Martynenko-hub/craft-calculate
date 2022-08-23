@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "tsc": "./node_modules/.bin/tsc",
-    "start": "node --max_old_space_size=2048 craco start",
-    "build": "node --max_old_space_size=2048 craco build",
+    "start": "node --max_old_space_size=2048 node_modules/.bin/craco start",
+    "build": "node --max_old_space_size=2048 node_modules/.bin/craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
   },
