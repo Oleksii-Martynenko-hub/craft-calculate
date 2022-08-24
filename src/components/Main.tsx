@@ -201,7 +201,6 @@ const Main = () => {
     setFactoryPrice(initData.factoryPrice)
     setRealizationPrice(initData.realizationPrice)
     setReturnPercent(initData.returnPercent)
-    setReturnPercentList(initData.returnPercentList)
     setInitialAmountItems(initData.initialAmountItems)
     setAdditionalPercent(undefined)
   };
@@ -260,12 +259,12 @@ const Main = () => {
 
       <Container sx={{
         paddingTop: { xs: 0, md: 4 },
-        paddingX: { xs: 2, md: 4 },
+        paddingX: { xs: 1, sm: 2, md: 4 },
         marginTop: { xs: "-60px", md: 0 },
         paddingBottom: { xs: "75px", md: 0 }
       }}>
-        <Grid container spacing={2}>
-          <Grid item xs={6} sm={4} md={true}>
+        <Grid container spacing={1}>
+          <Grid item xs={12} sm={4} md={true}>
             <Item>
               {resources.map((resource, i) => (
                 <NumberFormat
@@ -312,7 +311,7 @@ const Main = () => {
             </Item>
           </Grid>
 
-          <Grid item xs={6} sm={4} md={true}>
+          <Grid item xs={12} sm={4} md={true}>
             <Item>
               {resources.map((resource, i) => (
                 <NumberFormat
@@ -357,7 +356,7 @@ const Main = () => {
             </Item>
           </Grid>
 
-          <Grid item xs={6} sm={4} md={true}>
+          <Grid item xs={12} sm={4} md={true}>
             <Item>
               <NumberFormat
                 { ...numberFormatProps }
@@ -479,7 +478,7 @@ const Main = () => {
             </Item>
           </Grid>
 
-          <Grid item xs={6} sm={6} md={true}>
+          <Grid item xs={12} sm={6} md={true}>
             <Item>
               <NumberFormat
                 { ...numberFormatProps }
