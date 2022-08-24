@@ -19,8 +19,12 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
-import MenuIcon from '@mui/icons-material/Menu';
+import { 
+  AddCircleRounded as AddCircleRoundedIcon,
+  Menu as MenuIcon,
+  Cached as CachedIcon,
+  Storage as StorageIcon,
+} from '@mui/icons-material';
 import NumberFormat, { NumberFormatProps, NumberFormatValues } from 'react-number-format';
 
 import HideOnScroll from './HideOnScroll'
@@ -51,8 +55,8 @@ const initData: Data = {
   artifact: { price: 0, amount: 0 },
   factoryPrice: 0,
   realizationPrice: 0,
-  returnPercent: 24.7,
-  returnPercentList: [24.7, 36.7, 42.8],
+  returnPercent: 24.8,
+  returnPercentList: [24.8],
   initialAmountItems: 0,
 }
 
@@ -66,6 +70,12 @@ const numberFormatProps: NumberFormatProps<TextFieldProps> = {
   allowLeadingZeros: false,
   allowEmptyFormatting: true,
   fullWidth: true,
+}
+
+const labelStyles = {
+  borderRadius: "3px",
+  padding: "1px 4px",
+  marginLeft: "-3px",
 }
 
 const Main = () => {
@@ -127,7 +137,7 @@ const Main = () => {
   function calculateGeneralExpenses () {
     return (resourcesExpenses * (initialAmountItems || 0)) 
       + ((artifact.price || 0) * (artifact.amount || 0) * Math.floor(finiteAmountItems)) 
-      + (finiteAmountItems * (factoryPrice || 0));
+      + (Math.floor(finiteAmountItems) * (factoryPrice || 0));
   }
 
   function calculateFiniteAmountItems () {
@@ -167,6 +177,8 @@ const Main = () => {
     }
   }
 
+  const onClickResetData = () => setLocalData(initData);
+
   return (
     <React.Fragment>
       <CssBaseline />
@@ -187,6 +199,30 @@ const Main = () => {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Calculate crafting
             </Typography>
+
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              sx={{ mr: 2 }}
+            >
+              <CachedIcon 
+                sx={{ 
+                  position: "absolute",
+                  top: "14px",
+                  left: "26px",
+                  borderRadius: "50%",
+                  color: "#1976d2",
+                  background: "white",
+                  border: "1px solid",
+                  fontSize: "18px" 
+                }}
+                onClick={onClickResetData}
+              />
+
+              <StorageIcon sx={{ fontSize: "28px" }} />
+            </IconButton>
 
             <Button color="inherit">Login</Button>
           </Toolbar>
@@ -213,6 +249,17 @@ const Main = () => {
                   key={`resources[${i}].price`}
                   value={resource.price}
                   onValueChange={({ floatValue }) => onChangeResourcesHandler({ price: floatValue }, i)}
+                  InputLabelProps={{
+                    sx: {
+                      ...labelStyles,
+                      backgroundColor: "#e5eef0",
+                    },
+                  }}
+                  InputProps={{
+                    sx: { 
+                      backgroundColor: "#e5eef0",
+                    },
+                  }}
                 />
               ))}
 
@@ -223,6 +270,17 @@ const Main = () => {
                 label="Ціна артефакту"
                 value={artifact.price}
                 onValueChange={({ floatValue }) => onChangeArtifactHandler({ price: floatValue })}
+                InputLabelProps={{
+                  sx: { 
+                    ...labelStyles,
+                    backgroundColor: "#d0e0e3",
+                  },
+                }}
+                InputProps={{
+                  sx: { 
+                    backgroundColor: "#d0e0e3",
+                  },
+                }}
               />
             </Item>
           </Grid>
@@ -237,6 +295,17 @@ const Main = () => {
                   key={`resources[${i}].amount`}
                   value={resource.amount}
                   onValueChange={({ floatValue }) => onChangeResourcesHandler({ amount: floatValue }, i)}
+                  InputLabelProps={{
+                    sx: {
+                      ...labelStyles,
+                      backgroundColor: "#f2e2e9",
+                    },
+                  }}
+                  InputProps={{
+                    sx: { 
+                      backgroundColor: "#f2e2e9",
+                    },
+                  }}
                 />
               ))}
 
@@ -246,6 +315,17 @@ const Main = () => {
                 label="Кількість артефакту"
                 value={artifact.amount}
                 onValueChange={({ floatValue }) => onChangeArtifactHandler({ amount: floatValue })}
+                InputLabelProps={{
+                  sx: {
+                    ...labelStyles,
+                    backgroundColor: "#ead1dc",
+                  },
+                }}
+                InputProps={{
+                  sx: { 
+                    backgroundColor: "#ead1dc",
+                  },
+                }}
               />
             </Item>
           </Grid>
@@ -259,6 +339,17 @@ const Main = () => {
                 label="Ціна виробництва"
                 value={factoryPrice}
                 onValueChange={onChangeHandler(setFactoryPrice)}
+                InputLabelProps={{
+                  sx: {
+                    ...labelStyles,
+                    backgroundColor: "#dae5fa",
+                  },
+                }}
+                InputProps={{
+                  sx: { 
+                    backgroundColor: "#dae5fa",
+                  },
+                }}
               />
 
               <NumberFormat
@@ -268,16 +359,36 @@ const Main = () => {
                 label="Ціна реалізації"
                 value={realizationPrice}
                 onValueChange={onChangeHandler(setRealizationPrice)}
+                InputLabelProps={{
+                  sx: {
+                    ...labelStyles,
+                    backgroundColor: "#f7e0d9",
+                  },
+                }}
+                InputProps={{
+                  sx: { 
+                    backgroundColor: "#f7e0d9",
+                  },
+                }}
               />
 
               <FormControl fullWidth margin="normal" size="small">
-                <InputLabel id="demo-simple-select-label">Відсоток повернення ресурсів</InputLabel>
+                <InputLabel 
+                  id="demo-simple-select-label"
+                  sx={{ 
+                    
+                    backgroundColor: "#f6f6c2",
+                  }}
+                >
+                  Відсоток повернення ресурсів
+                </InputLabel>
+
                 <Select
                   labelId="demo-simple-select-label"
                   id="demo-simple-select"
                   label="Відсоток повернення ресурсів"
                   color="success"
-                  sx={{ textAlign: "left" }}
+                  sx={{ textAlign: "left", backgroundColor: "#f6f6c2", }}
                   fullWidth
                   value={returnPercent}
                   onChange={(event) => setReturnPercent(+event.target.value)}
@@ -318,6 +429,9 @@ const Main = () => {
                 variant="filled"
                 InputProps={{
                   readOnly: true,
+                  sx: { 
+                    backgroundColor: "#fac0c0",
+                  },
                 }}
                 sx={{ display: { xs: "block", sm: "none"}}}
               />
@@ -342,6 +456,17 @@ const Main = () => {
                 label="Кількість елементів"
                 value={initialAmountItems}
                 onValueChange={onChangeHandler(setInitialAmountItems)}
+                InputLabelProps={{
+                  sx: {
+                    ...labelStyles,
+                    backgroundColor: "#e9d9f8",
+                  },
+                }}
+                InputProps={{
+                  sx: { 
+                    backgroundColor: "#e9d9f8",
+                  },
+                }}
               />
 
               {resources.map((resource, i) => (
@@ -366,6 +491,9 @@ const Main = () => {
                 size="medium"
                 InputProps={{
                   readOnly: true,
+                  sx: { 
+                    backgroundColor: "#f8f8d9",
+                  },
                 }}
               />
             </Item>
@@ -373,60 +501,72 @@ const Main = () => {
 
           <Grid item xs={12} sm={6} md={true}>
             <Item>
-                <NumberFormat
-                  { ...numberFormatProps }
-                  label="Прибуток з продукції"
-                  value={profit}
-                  allowNegative
-                  variant="filled"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
+              <NumberFormat
+                { ...numberFormatProps }
+                label="Загальний прибуток"
+                value={profit + resourcesProfit}
+                allowNegative 
+                variant="filled"
+                InputProps={{
+                  readOnly: true,
+                  sx: { 
+                    backgroundColor: "#b7f7aa",
+                  },
+                }}
+              />
 
-                <NumberFormat
-                  { ...numberFormatProps }
-                  label="Залишок ресурсів"
-                  value={resourcesProfit}
-                  allowNegative 
-                  variant="filled"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
+              <NumberFormat
+                { ...numberFormatProps }
+                label="Прибуток з продукції"
+                value={profit}
+                allowNegative
+                variant="filled"
+                InputProps={{
+                  readOnly: true,
+                  sx: { 
+                    backgroundColor: "#def8d9",
+                  },
+                }}
+              />
 
-                <NumberFormat
-                  { ...numberFormatProps }
-                  label="Загальний прибуток"
-                  value={profit + resourcesProfit}
-                  allowNegative 
-                  variant="filled"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
+              <NumberFormat
+                { ...numberFormatProps }
+                label="Залишок ресурсів"
+                value={resourcesProfit}
+                allowNegative 
+                variant="filled"
+                InputProps={{
+                  readOnly: true,
+                  sx: { 
+                    backgroundColor: "#def8d9",
+                  },
+                }}
+              />
 
-                <NumberFormat
-                  { ...numberFormatProps }
-                  label="Загальні витрати"
-                  value={generalExpenses}
-                  variant="filled"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  sx={{ display: { xs: "none", sm: "block"}}}
-                />
-  
-                <NumberFormat
-                  { ...numberFormatProps }
-                  label="К-сть артефактів"
-                  value={Math.floor(finiteAmountItems)}
-                  variant="filled"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  sx={{ display: { xs: "none", sm: "block"}}}
-                />
+              <NumberFormat
+                { ...numberFormatProps }
+                label="Загальні витрати"
+                value={generalExpenses}
+                variant="filled"
+                InputProps={{
+                  readOnly: true,
+                  sx: { 
+                    backgroundColor: "#fac0c0",
+                  },
+                }}
+                sx={{ display: { xs: "none", sm: "block"}}}
+              />
+
+              <NumberFormat
+                { ...numberFormatProps }
+                label="К-сть артефактів"
+                value={Math.floor(finiteAmountItems)}
+                variant="filled"
+                InputProps={{
+                  readOnly: true,
+                }}
+                sx={{ display: { xs: "none", sm: "block"}}}
+              />
             </Item>
           </Grid>
         </Grid>
