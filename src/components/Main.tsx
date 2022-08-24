@@ -24,6 +24,7 @@ import {
   Menu as MenuIcon,
   Cached as CachedIcon,
   Storage as StorageIcon,
+  RemoveCircleRounded as RemoveCircleRoundedIcon,
 } from '@mui/icons-material';
 import NumberFormat, { NumberFormatProps, NumberFormatValues } from 'react-number-format';
 
@@ -171,13 +172,39 @@ const Main = () => {
     return (values: NumberFormatValues) => dispatch(values.floatValue)
   };
 
-  const onClickAddPercent = () => {
+  const onClickAddPercent = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+
     if (additionalPercent && !returnPercentList.includes(additionalPercent)) {
       setReturnPercentList(prev => [...prev, additionalPercent].sort())
+      setReturnPercent(additionalPercent)
+      setTimeout(() => {
+        setAdditionalPercent(undefined)
+      }, 100);
     }
   }
 
-  const onClickResetData = () => setLocalData(initData);
+  const onClickRemovePercent = (percent: number) => (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+
+    if (returnPercentList.includes(percent)) {
+      setReturnPercentList(prev => prev.filter(p => p !== percent))
+    }
+    if (returnPercent === percent) {
+      setReturnPercent(undefined)
+    }
+  }
+
+  const onClickResetData = () => {
+    setResources(initData.resources)
+    setArtifact(initData.artifact)
+    setFactoryPrice(initData.factoryPrice)
+    setRealizationPrice(initData.realizationPrice)
+    setReturnPercent(initData.returnPercent)
+    setReturnPercentList(initData.returnPercentList)
+    setInitialAmountItems(initData.initialAmountItems)
+    setAdditionalPercent(undefined)
+  };
 
   return (
     <React.Fragment>
@@ -206,6 +233,7 @@ const Main = () => {
               color="inherit"
               aria-label="menu"
               sx={{ mr: 2 }}
+              onClick={onClickResetData}
             >
               <CachedIcon 
                 sx={{ 
@@ -218,7 +246,6 @@ const Main = () => {
                   border: "1px solid",
                   fontSize: "18px" 
                 }}
-                onClick={onClickResetData}
               />
 
               <StorageIcon sx={{ fontSize: "28px" }} />
@@ -375,8 +402,8 @@ const Main = () => {
               <FormControl fullWidth margin="normal" size="small">
                 <InputLabel 
                   id="demo-simple-select-label"
-                  sx={{ 
-                    
+                  sx={{
+                    ...labelStyles,
                     backgroundColor: "#f6f6c2",
                   }}
                 >
@@ -388,7 +415,7 @@ const Main = () => {
                   id="demo-simple-select"
                   label="Відсоток повернення ресурсів"
                   color="success"
-                  sx={{ textAlign: "left", backgroundColor: "#f6f6c2", }}
+                  sx={{ textAlign: "left", backgroundColor: "#f6f6c2", "& > .MuiSelect-select > button": { display: "none"} }}
                   fullWidth
                   value={returnPercent}
                   onChange={(event) => setReturnPercent(+event.target.value)}
@@ -414,9 +441,12 @@ const Main = () => {
                     />
                   </MenuItem>
 
-                  {returnPercentList.map((percent, i) => ( 
-                    <MenuItem key={percent+i} value={percent}>
+                  {returnPercentList.map(percent => ( 
+                    <MenuItem key={percent} value={percent}>
                       <span style={{ opacity: '0' }}>-</span>{percent}%
+                      <IconButton aria-label="delete" size="small" color="error" sx={{ marginLeft: "auto"}} onClick={onClickRemovePercent(percent)}>
+                        <RemoveCircleRoundedIcon fontSize="small" />
+                      </IconButton>
                     </MenuItem>
                   ))}
                 </Select>
@@ -511,6 +541,7 @@ const Main = () => {
                   readOnly: true,
                   sx: { 
                     backgroundColor: "#b7f7aa",
+                    '&:hover': { backgroundColor: '#a2d498' },
                   },
                 }}
               />
