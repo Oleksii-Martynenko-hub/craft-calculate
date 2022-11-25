@@ -124,7 +124,7 @@ const Main = () => {
   }, [returnPercent, initialAmountItems])
 
   function calculateRevenue () {
-    return Math.floor(finiteAmountItems || 0) * ((realizationPrice || 0) - (realizationPrice || 0) * 0.045);
+    return Math.floor(finiteAmountItems || 0) * ((realizationPrice || 0) - (realizationPrice || 0) * 0.065);
   }
 
   function calculateResourcesProfit () {
